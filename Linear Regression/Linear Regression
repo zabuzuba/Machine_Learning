@@ -1,0 +1,32 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+np.random.seed(42)
+
+univariateData = pd.read_csv('/content/univariate.csv')
+
+
+print(univariateData.head())
+print(univariateData.describe())
+X = univariateData.loc[:,'YearsExperience']
+print(X.head())
+Y = univariateData.loc[:,'Salary']
+print(Y.head())
+X = X.values
+Y = Y.values
+print(X.shape)
+X = X.reshape(-1,1)
+print(X.shape)
+
+from sklearn.model_selection import train_test_split
+Xtrain, Xtest, Ytrain, Ytest = train_test_split(X,Y,test_size = 0.2, random_state = 42)
+plt.scatter(Xtrain, Ytrain,color = 'green')
+plt.scatter(Xtest, Ytest,color = 'yellow')
+
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(Xtrain, Ytrain)
+print(model.intercept_)
+print(model.coef_)
+score = model.score(Xtest,Ytest)
+print(score)
