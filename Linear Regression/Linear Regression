@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 np.random.seed(42)
 
-univariateData = pd.read_csv('/content/univariate.csv')
+univariateData = pd.read_csv('test.csv')
 
 
 print(univariateData.head())
