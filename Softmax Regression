@@ -1,0 +1,69 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import keras
+
+
+from keras.datasets import mnist
+(train_X, train_y), (test_X, test_y) = mnist.load_data()
+fig = plt.figure(figsize=(10,7))
+for i in range(15):  
+    ax = fig.add_subplot(3, 5, i+1)
+    ax.imshow(train_X[i], cmap=plt.get_cmap('gray'))
+    ax.set_title('Label (y): {y}'.format(y=train_y[i]))
+    plt.axis('off')
+    
+X_train = train_X.reshape(60000,28*28)
+X_test = test_X.reshape(10000,28*28)
+
+def one_hot(y, c):
+    y_hot = np.zeros((len(y), c))
+    y_hot[np.arange(len(y)), y] = 1    
+    return y_hot
+
+def softmax(z):
+    exp = np.exp(z - np.max(z))
+    for i in range(len(z)):
+        exp[i] /= np.sum(exp[i])
+        
+    return exp
+
+def fit(X, y, lr, c, epochs):
+    m, n = X.shape
+    w = np.random.random((n, c))
+    b = np.random.random(c)
+    losses = []
+    for epoch in range(epochs):
+        z = X@w + b
+        y_hat = softmax(z)
+        y_hot = one_hot(y, c)
+        w_grad = (1/m)*np.dot(X.T, (y_hat - y_hot)) 
+        b_grad = (1/m)*np.sum(y_hat - y_hot)
+        w = w - lr*w_grad
+        b = b - lr*b_grad
+        loss = -np.mean(np.log(y_hat[np.arange(len(y)), y]))
+        losses.append(loss)
+        if epoch%100==0:
+            print('Epoch {epoch}==> Loss = {loss}'
+                  .format(epoch=epoch, loss=loss))
+    return w, b, losses
+
+X_train = train_X.reshape(60000,28*28)
+X_train = X_train/255
+w, b, l = fit(X_train, train_y, lr=0.9, c=10, epochs=1000)
+
+def predict(X, w, b):
+    z = X@w + b
+    y_hat = softmax(z)
+    return np.argmax(y_hat, axis=1)
+
+def accuracy(y, y_hat):
+    return np.sum(y==y_hat)/len(y)
+
+train_preds = predict(X_train, w, b)
+print(accuracy(train_y, train_preds))
+X_test = test_X.reshape(10000,28*28)
+X_test = X_test/255
+test_preds = predict(X_test, w, b)
+print(accuracy(test_y, test_preds))
+fig = plt.figure(figsize=(15,10))
